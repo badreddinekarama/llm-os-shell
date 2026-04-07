@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "P4e5XhYRk2ElseS93-Uyl"
+uri = "file://llm-os-shell/README.md"
+type = "text"
+title = "llm-os-shell README.md"
