@@ -2,7 +2,7 @@
 
 > A POSIX-compatible interactive shell where every ambiguous or potentially dangerous command is routed through a local LLM for reasoning before execution.
 
-[![CI](https://github.com/yourusername/llm-os-shell/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/llm-os-shell/actions)
+[![CI](https://github.com/badreddinkarama/llm-os-shell/actions/workflows/ci.yml/badge.svg)](https://github.com/badreddinkarama/llm-os-shell/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://python.org)
 
@@ -65,7 +65,7 @@ llm-os:~$ rm -rf .
 ### From source
 
 ```bash
-git clone https://github.com/yourusername/llm-os-shell
+git clone https://github.com/badreddinkarama/llm-os-shell
 cd llm-os-shell
 pip install -e .
 ```
@@ -350,6 +350,12 @@ Ideas for contributions:
 - Plugin system for custom analyzers
 - Shell completion improvements
 - Web UI for log browsing
+
+---
+
+## Author
+
+**Badreddine karama** — [github.com/badreddinkarama](https://github.com/badreddinkarama)
 
 ---
 

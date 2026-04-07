@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "A POSIX-compatible interactive shell with LLM-powered safety analysis"
 readme = "README.md"
 license = { text = "MIT" }
-authors = [{ name = "llm-os-shell contributors" }]
+authors = [{ name = "Badreddine karama" }]
 requires-python = ">=3.10"
 keywords = ["shell", "llm", "safety", "cli", "posix", "ai"]
 classifiers = [
@@ -44,9 +44,9 @@ llm-os-shell = "llm_os_shell.cli:main"
 lls = "llm_os_shell.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/yourusername/llm-os-shell"
-Repository = "https://github.com/yourusername/llm-os-shell"
-Issues = "https://github.com/yourusername/llm-os-shell/issues"
+Homepage = "https://github.com/badreddinkarama/llm-os-shell"
+Repository = "https://github.com/badreddinkarama/llm-os-shell"
+Issues = "https://github.com/badreddinkarama/llm-os-shell/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -3,5 +3,5 @@ llm-os-shell: A POSIX-compatible interactive shell with LLM-powered safety analy
 """
 
 __version__ = "0.1.0"
-__author__ = "llm-os-shell contributors"
+__author__ = "Badreddine karama"
 __license__ = "MIT"

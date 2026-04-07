@@ -116,7 +116,7 @@ def save_config(config: ShellConfig) -> None:
     CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
     lines = [
         "# llm-os-shell configuration\n",
-        "# Generated automatically — edit as needed\n\n",
+        "# Edit as needed\n\n",
         "[llm]\n",
     ]
     for key, value in asdict(config).items():
