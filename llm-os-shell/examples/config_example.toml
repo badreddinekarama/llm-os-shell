@@ -1,0 +1,47 @@
+# ~/.llm-os-shell.toml — Example configuration for llm-os-shell
+# Copy this to your home directory and customize as needed.
+
+# ─── LLM Backend ─────────────────────────────────────────────────────────────
+# Options: ollama | openai-compat | rule-based
+llm_backend = "ollama"
+
+# Ollama settings (used when llm_backend = "ollama")
+ollama_base_url = "http://localhost:11434"
+ollama_model = "llama3"
+
+# OpenAI-compatible settings (LM Studio, llama.cpp server, etc.)
+# Used when llm_backend = "openai-compat"
+openai_base_url = "http://localhost:1234/v1"
+openai_api_key = "none"
+openai_model = "local-model"
+
+# ─── Risk Settings ───────────────────────────────────────────────────────────
+# Minimum risk level that triggers LLM analysis
+# Options: low | medium | high | critical
+risk_threshold = "medium"
+
+# Automatically proceed without asking for low-risk commands
+auto_approve_low = "true"
+
+# Always require confirmation for high-risk commands (even if LLM says proceed)
+require_confirmation_high = "true"
+
+# Always require "yes" for critical commands
+require_confirmation_critical = "true"
+
+# ─── Logging ─────────────────────────────────────────────────────────────────
+log_enabled = "true"
+log_dir = "~/.llm-os-shell/logs"
+log_level = "INFO"
+
+# ─── UI ──────────────────────────────────────────────────────────────────────
+color_enabled = "true"
+show_risk_badge = "true"
+
+# ─── LLM Performance ─────────────────────────────────────────────────────────
+llm_timeout = "30"
+llm_max_tokens = "512"
+
+# ─── History ─────────────────────────────────────────────────────────────────
+history_file = "~/.llm-os-shell/history"
+max_history = "1000"

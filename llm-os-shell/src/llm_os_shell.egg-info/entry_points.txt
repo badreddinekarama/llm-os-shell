@@ -1,0 +1,3 @@
+[console_scripts]
+llm-os-shell = llm_os_shell.cli:main
+lls = llm_os_shell.cli:main

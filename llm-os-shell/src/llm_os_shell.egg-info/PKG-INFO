@@ -1,0 +1,393 @@
+Metadata-Version: 2.4
+Name: llm-os-shell
+Version: 0.1.0
+Summary: A POSIX-compatible interactive shell with LLM-powered safety analysis
+Author: llm-os-shell contributors
+License: MIT
+Project-URL: Homepage, https://github.com/yourusername/llm-os-shell
+Project-URL: Repository, https://github.com/yourusername/llm-os-shell
+Project-URL: Issues, https://github.com/yourusername/llm-os-shell/issues
+Keywords: shell,llm,safety,cli,posix,ai
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: System Administrators
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: MacOS
+Classifier: Operating System :: Unix
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: System :: Shells
+Classifier: Topic :: System :: System Shells
+Classifier: Topic :: Utilities
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Provides-Extra: dev
+Requires-Dist: pytest>=7.4; extra == "dev"
+Requires-Dist: pytest-cov>=4.1; extra == "dev"
+Provides-Extra: gpt4all
+Requires-Dist: gpt4all>=2.0; extra == "gpt4all"
+Dynamic: license-file
+
+# llm-os-shell
+
+> A POSIX-compatible interactive shell where every ambiguous or potentially dangerous command is routed through a local LLM for reasoning before execution.
+
+[![CI](https://github.com/yourusername/llm-os-shell/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/llm-os-shell/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://python.org)
+
+---
+
+## What is it?
+
+`llm-os-shell` is a drop-in interactive shell replacement that acts as a safety net between you and your filesystem. Before executing any risky command, it:
+
+1. **Classifies** the command's risk level (`safe → low → medium → high → critical`)
+2. **Consults a local LLM** to explain what the command does, what could go wrong, and suggest safer alternatives
+3. **Pauses and asks for confirmation** on high/critical risk commands
+4. **Logs every interaction** as structured JSON for audit purposes
+
+All analysis runs locally — no cloud calls, no API keys required (beyond your own local LLM setup).
+
+```
+llm-os:~$ rm -rf .
+
+────────────────────────────────────────────────────────────
+  CRITICAL
+────────────────────────────────────────────────────────────
+  Detected: Recursive force-remove
+
+  Analysis:
+    This command will recursively and forcefully delete all
+    files and directories in the current working directory.
+    This action is permanent and cannot be undone without a
+    backup.
+
+  Risks:
+    • Recursive force-remove
+    • Permanent data loss — no recycle bin
+
+  Safer alternative:
+    Run 'ls -la .' first to see what will be affected.
+    Use 'rm -ri .' for interactive mode.
+
+  Analyzed by: ollama:llama3
+────────────────────────────────────────────────────────────
+  This is a CRITICAL-risk command. Type 'yes' to proceed, or 'no' to cancel:
+```
+
+---
+
+## Features
+
+- **POSIX-compatible shell loop** — pipes, redirects, semicolons, environment variables, all work
+- **Risk engine** — 50+ patterns across 4 risk levels with no external dependencies
+- **LLM integration** — pluggable backends: Ollama, OpenAI-compatible APIs (LM Studio, llama.cpp), or a fast rule-based fallback
+- **Structured logging** — all LLM interactions and user decisions stored as JSON-L
+- **Configurable thresholds** — choose when LLM kicks in (medium/high/critical)
+- **Trusted commands** — whitelist commands that should never be intercepted
+- **Zero cloud dependencies** — everything runs locally
+
+---
+
+## Installation
+
+### From source
+
+```bash
+git clone https://github.com/yourusername/llm-os-shell
+cd llm-os-shell
+pip install -e .
+```
+
+### Prerequisites
+
+- Python 3.10 or newer
+- No additional Python dependencies (stdlib only)
+- For LLM analysis: a running [Ollama](https://ollama.com) instance, or any OpenAI-compatible local server
+
+---
+
+## Quick Start
+
+### 1. Without an LLM (rule-based mode)
+
+Works immediately with no setup — uses built-in pattern matching:
+
+```bash
+llm-os-shell --backend rule-based
+```
+
+Or with the short alias:
+
+```bash
+lls --backend rule-based
+```
+
+### 2. With Ollama (recommended)
+
+Install Ollama from [ollama.com](https://ollama.com), pull a model, then start:
+
+```bash
+ollama pull llama3
+ollama serve          # in a separate terminal
+llm-os-shell          # uses Ollama automatically
+```
+
+### 3. With LM Studio or llama.cpp
+
+Point the shell at your local OpenAI-compatible server:
+
+```bash
+llm-os-shell --backend openai-compat --ollama-url http://localhost:1234/v1
+```
+
+### 4. Run a single command (non-interactive)
+
+```bash
+llm-os-shell -c "rm -rf /tmp/my-directory"
+```
+
+---
+
+## Usage
+
+```
+llm-os-shell [OPTIONS]
+
+Options:
+  --version               Show version and exit
+  -c, --command CMD       Execute a single command and exit
+  --backend BACKEND       LLM backend: ollama | openai-compat | rule-based
+  --threshold LEVEL       Min risk for LLM: low | medium | high | critical
+  --model MODEL           Model name (e.g. llama3, mistral, codellama)
+  --ollama-url URL        Ollama base URL (default: http://localhost:11434)
+  --no-color              Disable colored output
+  --no-log                Disable interaction logging
+  -h, --help              Show help
+```
+
+### Built-in shell commands
+
+| Command | Description |
+|---|---|
+| `help` | Show help text |
+| `lls-config` | Show active configuration |
+| `lls-backend` | Show which LLM backend is active |
+| `lls-risks <cmd>` | Preview risk classification for any command |
+| `lls-log` | Show path to the interaction log |
+| `history` | Show command history |
+| `cd`, `exit` | Standard builtins |
+
+---
+
+## Risk Levels
+
+| Level | Description | LLM? | Confirmation? |
+|---|---|---|---|
+| `SAFE` | Common read-only commands (`ls`, `pwd`, `echo`) | No | No |
+| `LOW` | Mostly harmless (`cat`, `cp`, `mkdir`) | No | No |
+| `MEDIUM` | Potentially destructive (`rm`, `mv`, `curl`, `pip install`) | Yes | Yes |
+| `HIGH` | Dangerous (`sudo`, `kill -9`, `iptables`, pipe-to-bash) | Yes | Yes (y/N) |
+| `CRITICAL` | Catastrophic (`rm -rf /`, `mkfs`, fork bomb, `dd` to device) | Yes | Must type `yes` |
+
+---
+
+## Configuration
+
+### Environment variables
+
+```bash
+LLM_OS_BACKEND=ollama          # ollama | openai-compat | rule-based
+LLM_OS_OLLAMA_URL=http://localhost:11434
+LLM_OS_OLLAMA_MODEL=llama3
+LLM_OS_RISK_THRESHOLD=medium   # low | medium | high | critical
+LLM_OS_LOG_DIR=~/.llm-os-shell/logs
+LLM_OS_LOG_ENABLED=1
+LLM_OS_COLOR=1
+LLM_OS_TIMEOUT=30
+```
+
+### Config file
+
+Create `~/.llm-os-shell.toml` (see [`examples/config_example.toml`](examples/config_example.toml)):
+
+```toml
+llm_backend = "ollama"
+ollama_model = "llama3"
+risk_threshold = "medium"
+log_enabled = "true"
+color_enabled = "true"
+```
+
+---
+
+## Swapping the LLM Backend
+
+The backend is fully modular. Three backends are included:
+
+| Backend | Class | When to use |
+|---|---|---|
+| `rule-based` | `RuleBasedBackend` | No LLM available; instant, always works |
+| `ollama` | `OllamaBackend` | Local Ollama server (recommended) |
+| `openai-compat` | `OpenAICompatibleBackend` | LM Studio, llama.cpp, Kobold, etc. |
+
+### Adding a custom backend
+
+Subclass `LLMBackend` in `src/llm_os_shell/llm_backend.py`:
+
+```python
+from llm_os_shell.llm_backend import LLMBackend
+from llm_os_shell.risk import RiskAssessment
+
+class MyBackend(LLMBackend):
+    @property
+    def name(self) -> str:
+        return "my-backend"
+
+    def is_available(self) -> bool:
+        return True   # your health-check logic
+
+    def analyze(self, assessment: RiskAssessment, cwd: str, user: str) -> dict:
+        # Call your LLM, return a dict with:
+        return {
+            "explanation": "...",
+            "risks": ["..."],
+            "safer_alternative": "...",
+            "real_risk": "high",
+            "llm_recommendation": "warn",   # proceed | warn | block
+            "backend": self.name,
+        }
+```
+
+Then modify `build_backend()` in `llm_backend.py` to recognize your new backend name.
+
+---
+
+## Interaction Logs
+
+Every LLM consultation and user decision is saved as JSON-L at `~/.llm-os-shell/logs/interactions-<date>.jsonl`.
+
+Example entries:
+
+```json
+{"event": "command_received", "command": "rm -rf .", "risk_level": "critical", "risk_reasons": ["Recursive force-remove"], "timestamp": "2024-04-07T10:23:45.123Z"}
+{"event": "llm_analysis", "command": "rm -rf .", "latency_ms": 842, "backend": "ollama:llama3", "llm_result": {"explanation": "...", "real_risk": "critical", "llm_recommendation": "block"}, "timestamp": "2024-04-07T10:23:46.001Z"}
+{"event": "user_decision", "command": "rm -rf .", "decision": "rejected", "reason": "typed no", "timestamp": "2024-04-07T10:23:48.500Z"}
+```
+
+To view today's log:
+
+```bash
+lls-log          # prints the path
+cat $(llm-os-shell -c "lls-log")
+```
+
+---
+
+## Running Tests
+
+```bash
+pip install -e ".[dev]"
+pytest tests/ -v
+```
+
+With coverage:
+
+```bash
+pytest tests/ --cov=llm_os_shell --cov-report=term-missing
+```
+
+Test suite covers:
+- Risk classification (50+ cases across all levels)
+- LLM backend abstraction and fallback behavior
+- Command execution (builtins, pipelines, redirects)
+- Configuration loading and env overrides
+- Shell confirmation flow
+- Structured logging
+
+---
+
+## Project Structure
+
+```
+llm-os-shell/
+├── src/
+│   └── llm_os_shell/
+│       ├── __init__.py        # Version and package metadata
+│       ├── __main__.py        # python -m llm_os_shell entry point
+│       ├── cli.py             # Argument parser and CLI entry
+│       ├── shell.py           # Main interactive shell loop
+│       ├── risk.py            # Risk classification engine (50+ patterns)
+│       ├── llm_backend.py     # Pluggable LLM backend abstraction
+│       ├── executor.py        # Command executor (builtins + subprocess)
+│       ├── display.py         # Terminal display and color output
+│       ├── logger.py          # Structured JSON-L interaction logger
+│       └── config.py          # Config loading (env vars + TOML file)
+├── tests/
+│   ├── test_risk.py           # Risk engine tests
+│   ├── test_llm_backend.py    # Backend tests (with mocking)
+│   ├── test_executor.py       # Execution tests
+│   ├── test_config.py         # Config tests
+│   ├── test_shell.py          # Shell integration tests
+│   └── test_logger.py         # Logger tests
+├── examples/
+│   ├── dangerous_commands.sh  # Annotated examples of LLM handling
+│   └── config_example.toml   # Full configuration reference
+├── .github/
+│   └── workflows/ci.yml       # GitHub Actions CI
+├── pyproject.toml             # Package metadata and build config
+├── LICENSE                    # MIT License
+└── README.md
+```
+
+---
+
+## Supported Models (via Ollama)
+
+Any model that can produce structured JSON output works well. Recommended:
+
+| Model | Pull command | Notes |
+|---|---|---|
+| Llama 3 8B | `ollama pull llama3` | Best balance of speed and quality |
+| Mistral 7B | `ollama pull mistral` | Fast, good at following instructions |
+| Gemma 2B | `ollama pull gemma:2b` | Lightweight, lower quality |
+| CodeLlama | `ollama pull codellama` | Good for shell/code analysis |
+| Phi-3 Mini | `ollama pull phi3:mini` | Very fast on CPU |
+
+---
+
+## Security Notes
+
+- The shell runs commands in a subprocess — it has the same privileges as your user.
+- The LLM is advisory only. You remain in control of every decision.
+- Logs may contain sensitive command strings — store them securely.
+- The risk classifier is heuristic-based and not a security boundary. It may miss novel attack patterns.
+- Never use this as your only security layer in production environments.
+
+---
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Run tests: `pytest tests/`
+4. Submit a pull request
+
+Ideas for contributions:
+- Additional risk patterns (especially Windows/PowerShell support)
+- GPT4All backend integration
+- Plugin system for custom analyzers
+- Shell completion improvements
+- Web UI for log browsing
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).

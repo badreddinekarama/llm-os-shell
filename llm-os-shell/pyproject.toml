@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llm-os-shell"
+version = "0.1.0"
+description = "A POSIX-compatible interactive shell with LLM-powered safety analysis"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "llm-os-shell contributors" }]
+requires-python = ">=3.10"
+keywords = ["shell", "llm", "safety", "cli", "posix", "ai"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX",
+    "Operating System :: MacOS",
+    "Operating System :: Unix",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Shells",
+    "Topic :: System :: System Shells",
+    "Topic :: Utilities",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+]
+gpt4all = [
+    "gpt4all>=2.0",
+]
+
+[project.scripts]
+llm-os-shell = "llm_os_shell.cli:main"
+lls = "llm_os_shell.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/yourusername/llm-os-shell"
+Repository = "https://github.com/yourusername/llm-os-shell"
+Issues = "https://github.com/yourusername/llm-os-shell/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["llm_os_shell"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+show_missing = true
